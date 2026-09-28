@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `assistantId` INTEGER NULL,
+    ADD COLUMN `status` ENUM('ACTIVE', 'DELETED', 'PUSH', 'BLOCK', 'PENDING', 'CHECKED', 'CLOSED', 'CONVERTED') NOT NULL DEFAULT 'ACTIVE';
+
+-- AddForeignKey
+ALTER TABLE `User` ADD CONSTRAINT `User_assistantId_fkey` FOREIGN KEY (`assistantId`) REFERENCES `AssistantInfo`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

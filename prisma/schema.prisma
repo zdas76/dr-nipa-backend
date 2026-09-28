@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id         Int            @id @default(autoincrement())
+  userName   String         @unique
+  email      String         @unique
+  password   String
+  role       UserRole
+  status     Status         @default(ACTIVE)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  assistant  AssistantInfo?
+  doctorInfo DoctorInfo?
+}
+
+model DoctorInfo {
+  id                    Int      @id @default(autoincrement())
+  nameEnglish           String?
+  nameBangla            String?
+  designation           String?
+  contactNumber         String?
+  newPatientVisitingFee Int?
+  oldPatientVisitingFee Int?
+  email                 String   @unique
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  users                 User     @relation(fields: [email], references: [email])
+  isSafes               IsSafe[]
+}
+
+model IsSafe {
+  id         Int         @id @default(autoincrement())
+  isSafe     Boolean     @default(false)
+  limit      Int?
+  doctorId   Int?
+  doctorInfo DoctorInfo? @relation(fields: [doctorId], references: [id])
+}
+
+model PatientInfo {
+  id            Int           @id @default(autoincrement())
+  patientId     Int?          @unique
+  name          String
+  age           String
+  sex           Sex
+  contactNumber String
+  address       String
+  isDeleted     Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  appointments  Appointment[]
+}
+
+model AssistantInfo {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  name          String
+  fatherName    String
+  motherName    String
+  dateOfBirth   DateTime
+  sex           Sex?
+  contactNumber String
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  users         User     @relation(fields: [email], references: [email])
+}
+
+model ConnectorInfo {
+  id             Int           @id @default(autoincrement())
+  name           String
+  contactNumber  String        @unique
+  email          String?
+  diagnosticName String?
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  appointments   Appointment[]
+}
+
+model Appointment {
+  id            Int               @id @default(autoincrement())
+  patientId     Int
+  visitingDate  DateTime?
+  patientType   PatientType?
+  visitingTime  String?
+  connectorId   Int?
+  visitingFee   Int?
+  discount      Int?
+  connectorFee  Int?
+  weight        Float?
+  booldPusher   String?
+  bloodGroup    String?
+  status        AppointmentStatus @default(BOOKED)
+  serialNumber  Int?              @unique
+  paymentStatus PaymentStatus     @default(UNPAID)
+  connectorInfo ConnectorInfo?    @relation(fields: [connectorId], references: [id])
+  patientInfo   PatientInfo       @relation(fields: [patientId], references: [patientId])
+  sendMessage   SendMessage[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model SendMessage {
+  id            Int          @id @default(autoincrement())
+  contactNumber String
+  message_ID    String
+  appointmentId Int
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ASSISTANT
+  ADMIN
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AppointmentStatus {
+  BOOKED
+  PRESENT
+  ABSENT
+  VISITED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  PARTIALLY_PAID
+}
+
+enum Status {
+  ACTIVE
+  DELETED
+  PUSH
+  BLOCK
+  PENDING
+  CHECKED
+  CLOSED
+  COMPLETED
+}
+
+enum PatientType {
+  NEW
+  OLD
+}
